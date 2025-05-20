@@ -115,7 +115,7 @@ endpoint = "https://keycloak.example.com"
 clientid = "keycloak-client-id"
 clientsecret = "MIKEcHObWmI3V3pF1hcSqC9KEILfLN"
 clientscope = "openid"
-
+clientrole = "test-role"
   ```
 * Edit `/etc/pam.d/sshd` and add the following at the top of file
 ```bash
