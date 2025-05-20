@@ -114,35 +114,15 @@ realm = "ssh-demo"
 endpoint = "https://keycloak.example.com"
 clientid = "keycloak-client-id"
 clientsecret = "MIKEcHObWmI3V3pF1hcSqC9KEILfLN"
-clientscop = "openid"
+clientscope = "openid"
 
   ```
 * Edit `/etc/pam.d/sshd` and add the following at the top of file
 ```bash
-auth sufficient pam_exec.so expose_authtok      log=/var/log/kc-ssh-pam.log     /opt/kc-ssh-pam/kc-ssh-pam
+auth [success=done default=die] pam_exec.so expose_authtok      log=/var/log/kc-ssh-pam.log     /opt/kc-ssh-pam/kc-ssh-pam
 ```
 - User is not automatically created during login, so a local user must be present on the system before hand.
 
-To automatically create a user install 
-```bash
- apt-get install libpam-script
-```
-Add the follwoing in `/etc/pam.d/sshd` underneath previous argument
-```bash
-auth optional pam_script.so
-```
-
-Then, the script itself. In the file `/usr/share/libpam-script/pam_script_auth`
-```bash
-#!/bin/bash
-adduser $PAM_USER --disabled-password --quiet --gecos ""
-```
-In PAM modules, username is given in "$PAM_USER" variable.
-
-Make this script executable
-```bash
-chmod +x /usr/share/libpam-script/pam_script_auth 
-```
 Restart sshd service
 ```bash
 sudo systemctl restart sshd

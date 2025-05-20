@@ -44,11 +44,18 @@ func main() {
 		os.Exit(2)
 	}
 
-	// Verify the token and retrieve the ID token
-	if err := provider.VerifyToken(accessToken); err != nil {
-		// handle the error
-		log.Fatalf("Failed to verify token %v for user %v\n", err, username)
+	// Verify the token and retrieve claims
+	claims, err := provider.VerifyToken(accessToken)
+	if err != nil {
+		log.Fatalf("Failed to verify token: %v for user %v", err, username)
 		os.Exit(3)
 	}
+
+	// Authorize based on required role
+	if err := provider.AuthorizeTokenByClientRole(claims, c.ClientID, c.ClientRole); err != nil {
+		log.Fatalf("Authorization failed: %v", err)
+		os.Exit(4)
+	}
+
 	log.Println("Token acquired and verified Successfully for user -", username)
 }

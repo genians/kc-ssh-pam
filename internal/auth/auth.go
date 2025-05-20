@@ -84,12 +84,12 @@ func GetProviderInfo(providerEndpoint string) (*OIDCProviderInfo, error) {
 	return p, nil
 }
 
-func (provider *OIDCProviderInfo) VerifyToken(aToken string) error {
+func (provider *OIDCProviderInfo) VerifyToken(aToken string) (jwt.MapClaims, error) {
 	// Verify the JWT Signature before further parsing and processing
 	ctx := context.Background()
 	_, err := provider.KeySet.VerifySignature(ctx, aToken)
 	if err != nil {
-		return fmt.Errorf("Access token verification failed: %v", err)
+		return nil, fmt.Errorf("Access token verification failed: %v", err)
 	}
 
 	// Set up the JWT token parser
@@ -98,13 +98,13 @@ func (provider *OIDCProviderInfo) VerifyToken(aToken string) error {
 	// Parse the access token
 	token, _, err := parser.ParseUnverified(aToken, jwt.MapClaims{})
 	if err != nil {
-		return fmt.Errorf("Error parsing access token: %v", err)
+		return nil, fmt.Errorf("Error parsing access token: %v", err)
 	}
 
 	// Get the token's claims
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return fmt.Errorf("Error getting token claims")
+		return nil, fmt.Errorf("Error getting token claims")
 	}
 
 	// Get the token's expiration time
@@ -112,10 +112,35 @@ func (provider *OIDCProviderInfo) VerifyToken(aToken string) error {
 
 	// Check if the token is expired
 	if time.Now().After(expirationTime) {
-		return fmt.Errorf("Access token has expired")
+		return nil, fmt.Errorf("Access token has expired")
 	}
 
-	return nil
+	return claims, nil
+}
+
+func (provider *OIDCProviderInfo) AuthorizeTokenByClientRole(claims jwt.MapClaims, clientID string, requiredRole string) error {
+	resourceAccess, ok := claims["resource_access"].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("Missing or invalid 'resource_access' claim in token")
+	}
+
+	clientAccess, ok := resourceAccess[clientID].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("No access info for client '%s'", clientID)
+	}
+
+	roles, ok := clientAccess["roles"].([]interface{})
+	if !ok {
+		return fmt.Errorf("Missing or invalid 'roles' for client '%s'", clientID)
+	}
+
+	for _, role := range roles {
+		if roleStr, ok := role.(string); ok && roleStr == requiredRole {
+			return nil // Found
+		}
+	}
+
+	return fmt.Errorf("Access denied: role '%s' not found in client '%s'", requiredRole, clientID)
 }
 
 func RequestJWT(username, password, otp, tokenUrl, clientid, clientsecret, clientscope string) (string, error) {
