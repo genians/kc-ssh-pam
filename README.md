@@ -115,7 +115,7 @@ endpoint = "https://keycloak.example.com"
 clientid = "keycloak-client-id"
 clientsecret = "MIKEcHObWmI3V3pF1hcSqC9KEILfLN"
 clientscope = "openid"
-clientrole = "test-role"
+clientrole = "keycloak-client-role"
   ```
 * Edit `/etc/pam.d/sshd` and add the following at the top of file
 ```bash
@@ -128,40 +128,69 @@ Restart sshd service
 sudo systemctl restart sshd
 ```
 
-### Keycloak Cleint Creation
+### Keycloak Client Creation
 ```bash
 Step 1: Log in to the Keycloak Administration Console.
 
 Step 2: Select the realm for which you want to create the client.
 
-Step 3: Click on "Clients" from the left-hand menu, and then click on the "Create" button.
+Step 3: Click on "Clients" from the left-hand menu, then click the "Create client" button.
 
-Step 4: In the "Client ID" field, enter "ssh-login".
+Step 4: In the "Client type" field, select "openid-connect".
 
-Step 5: Set the "Client Protocol" to "openid-connect".
+Step 5: In the "Client ID" field, enter "ssh-login".
 
-Step 6: In the "Redirect URIs" field, enter "urn:ietf:wg:oauth:2.0:oob".
+Step 6: Set "Client authentication" to ON.
 
-Step 7: In the "Access Type" field, select "confidential".
+Step 7: Set "Standard Flow Enabled" to ON.
 
-Step 8: In the "Standard Flow Enabled" field, select "ON".
+Step 8: Set "Direct Access Grants" to ON.
 
-Step 9: In the "Direct Access Grants Enabled" field, select "ON".
+Step 9: In the "Redirect URIs" field, enter "urn:ietf:wg:oauth:2.0:oob".
 
-Step 10: Click on the "Save" button to create the client.
+Step 10: Click the "Save" button to create the client.
+```
 
-To get the credentials of the client, follow these steps:
+### Create a Client Role
+```bash
+Step 1: Go to the "Clients" page in the Keycloak Administration Console.
 
+Step 2: Select the "ssh-login" client from the list.
+
+Step 3: Go to the "Roles" tab.
+
+Step 4: Click the "Create role" button.
+
+Step 5: Set the Role name to "ssh-pc1".
+
+Step 6: Click the "Save" button to create the client role.
+```
+
+### Assign Role to a User Group
+```bash
+Step 1: Go to the "Groups" page in the Keycloak Administration Console.
+
+Step 2: Select the group to assign the client role to.
+
+Step 3: Go to the "Role mapping" tab.
+
+Step 4: Click the "Assign role" button.
+
+Step 5: Select the client role "ssh-pc1".
+
+Step 6: Click the "Assign" button to assign the client role.
+```
+
+### Get Client Credentials
+```bash
 Step 1: Go to the "Clients" page in the Keycloak Administration Console.
 
 Step 2: Select the "ssh-login" client from the list.
 
 Step 3: Click on the "Credentials" tab.
 
-Step 4: The client secret will be displayed under the "Client Secret" section.
+Step 4: The client secret is displayed under the "Client Secret" section.
 ```
-
-:diamond_shape_with_a_dot_inside: Detailed article with screenshots is also [available here](https://lmno.pk/post/kc-sso-pam/)
 
 ## Contributers
 <!-- markdownlint-disable -->
