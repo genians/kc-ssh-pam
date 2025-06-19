@@ -119,7 +119,7 @@ clientrole = "keycloak-client-role"
   ```
 * Edit `/etc/pam.d/sshd` and add the following at the top of file
 ```bash
-auth [success=done default=die] pam_exec.so expose_authtok      log=/var/log/kc-ssh-pam.log     /opt/kc-ssh-pam/kc-ssh-pam
+auth [success=done default=die] pam_exec.so expose_authtok  quiet  log=/var/log/kc-ssh-pam.log  /opt/kc-ssh-pam/kc-ssh-pam
 ```
 - User is not automatically created during login, so a local user must be present on the system before hand.
 
