@@ -13,6 +13,7 @@ type Config struct {
 	ClientSecret string
 	ClientScope  string
 	ClientRole   string
+	ProxyURL     string
 }
 
 var (
