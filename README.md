@@ -101,8 +101,9 @@ Arguments:
   1. If a config path is specified using the `-c` flag, it will override any other defined options.
   2. Verify the existence of the KC_SSH_CONFIG variable; if it's defined, use the location specified within it.
   3. The working directory where the program is being executed from.
-  4. Default install location `/opt/kc-ssh-pam/`
-  5. `$HOME/.config/`
+  4. proxyurl is optional. If defined, the program will route Keycloak requests through the specified proxy. If proxyurl is missing or empty, a direct connection is used.
+  5. Default install location `/opt/kc-ssh-pam/`
+  6. `$HOME/.config/`
   
   
 > [!IMPORTANT]  
@@ -116,6 +117,7 @@ clientid = "keycloak-client-id"
 clientsecret = "MIKEcHObWmI3V3pF1hcSqC9KEILfLN"
 clientscope = "openid"
 clientrole = "keycloak-client-role"
+proxyurl = "https://192.168.0.1:8080" # Optional: HTTP/HTTPS proxy to use when accessing Keycloak
   ```
 * Edit `/etc/pam.d/sshd` and add the following at the top of file
 ```bash

@@ -143,9 +143,29 @@ func (provider *OIDCProviderInfo) AuthorizeTokenByClientRole(claims jwt.MapClaim
 	return fmt.Errorf("Access denied: role '%s' not found in client '%s'", requiredRole, clientID)
 }
 
-func RequestJWT(username, password, otp, tokenUrl, clientid, clientsecret, clientscope string) (string, error) {
-	// Create a new HTTP client
-	client := &http.Client{}
+func createHTTPClient(proxyurl string) (*http.Client, error) {
+	if strings.TrimSpace(proxyurl) == "" {
+		return &http.Client{}, nil
+	}
+
+	parsedProxyURL, err := url.Parse(proxyurl)
+	if err != nil {
+		return nil, fmt.Errorf("invalid proxy URL: %v", err)
+	}
+
+	transport := &http.Transport{
+		Proxy: http.ProxyURL(parsedProxyURL),
+	}
+
+	return &http.Client{Transport: transport}, nil
+}
+
+func RequestJWT(username, password, otp, tokenUrl, clientid, clientsecret, clientscope, proxyurl string) (string, error) {
+	// Create a proxy-aware HTTP client (if proxyurl is set)
+	client, err := createHTTPClient(proxyurl)
+	if err != nil {
+		return "", err
+	}
 
 	// Encode the username, password (with OTP appended)
 	urlV := url.Values{}

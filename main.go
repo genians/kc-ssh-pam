@@ -38,7 +38,7 @@ func main() {
 	}
 
 	// Retrieve an OIDC token using the password grant type
-	accessToken, err := auth.RequestJWT(username, password, otp, provider.TokenURL, c.ClientID, c.ClientSecret, c.ClientScope)
+	accessToken, err := auth.RequestJWT(username, password, otp, provider.TokenURL, c.ClientID, c.ClientSecret, c.ClientScope, c.ProxyURL)
 	if err != nil {
 		log.Fatalf("Failed to retrieve token for %v - error: %v\n", username, err)
 		os.Exit(2)
