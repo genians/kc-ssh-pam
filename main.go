@@ -4,9 +4,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/kha7iq/kc-ssh-pam/internal/auth"
-	"github.com/kha7iq/kc-ssh-pam/internal/conf"
-	"github.com/kha7iq/kc-ssh-pam/internal/flags"
+	"github.com/genians/kc-ssh-pam/internal/auth"
+	"github.com/genians/kc-ssh-pam/internal/conf"
+	"github.com/genians/kc-ssh-pam/internal/flags"
 )
 
 var (
@@ -31,21 +31,26 @@ func main() {
 		log.Fatal(err)
 	}
 
+	client, err := auth.CreateHTTPClient(c.ProxyURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Get provider configuration
-	provider, err := auth.GetProviderInfo(providerEndpoint)
+	provider, err := auth.GetProviderInfo(providerEndpoint, client)
 	if err != nil {
 		log.Fatalf("Failed to retrieve provider configuration for provider %v with error %v\n", providerEndpoint, err)
 	}
 
 	// Retrieve an OIDC token using the password grant type
-	accessToken, err := auth.RequestJWT(username, password, otp, provider.TokenURL, c.ClientID, c.ClientSecret, c.ClientScope, c.ProxyURL)
+	accessToken, err := auth.RequestJWT(username, password, otp, provider.TokenURL, c.ClientID, c.ClientSecret, c.ClientScope, client)
 	if err != nil {
 		log.Fatalf("Failed to retrieve token for %v - error: %v\n", username, err)
 		os.Exit(2)
 	}
 
 	// Verify the token and retrieve claims
-	claims, err := provider.VerifyToken(accessToken)
+	claims, err := provider.VerifyToken(accessToken, client)
 	if err != nil {
 		log.Fatalf("Failed to verify token: %v for user %v", err, username)
 		os.Exit(3)
