@@ -50,14 +50,14 @@ func unmarshalResp(r *http.Response, body []byte, v interface{}) error {
 	return fmt.Errorf("expected Content-Type = application/json, got %q: %v", ct, err)
 }
 
-func GetProviderInfo(providerEndpoint string) (*OIDCProviderInfo, error) {
+func GetProviderInfo(providerEndpoint string, client *http.Client) (*OIDCProviderInfo, error) {
 	wellKnown := strings.TrimSuffix(providerEndpoint, "/") + "/.well-known/openid-configuration"
 	// Query the oidc provider for the configuration
 	req, err := http.NewRequest("GET", wellKnown, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -79,14 +79,14 @@ func GetProviderInfo(providerEndpoint string) (*OIDCProviderInfo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("oidc: failed to decode provider discovery object: %v", err)
 	}
-	ctx := context.Background()
+	ctx := oidc.ClientContext(context.Background(), client)
 	p.KeySet = oidc.NewRemoteKeySet(ctx, p.JWKSURL)
 	return p, nil
 }
 
-func (provider *OIDCProviderInfo) VerifyToken(aToken string) (jwt.MapClaims, error) {
+func (provider *OIDCProviderInfo) VerifyToken(aToken string, client *http.Client) (jwt.MapClaims, error) {
 	// Verify the JWT Signature before further parsing and processing
-	ctx := context.Background()
+	ctx := oidc.ClientContext(context.Background(), client)
 	_, err := provider.KeySet.VerifySignature(ctx, aToken)
 	if err != nil {
 		return nil, fmt.Errorf("Access token verification failed: %v", err)
@@ -143,7 +143,7 @@ func (provider *OIDCProviderInfo) AuthorizeTokenByClientRole(claims jwt.MapClaim
 	return fmt.Errorf("Access denied: role '%s' not found in client '%s'", requiredRole, clientID)
 }
 
-func createHTTPClient(proxyurl string) (*http.Client, error) {
+func CreateHTTPClient(proxyurl string) (*http.Client, error) {
 	if strings.TrimSpace(proxyurl) == "" {
 		return &http.Client{}, nil
 	}
@@ -160,12 +160,7 @@ func createHTTPClient(proxyurl string) (*http.Client, error) {
 	return &http.Client{Transport: transport}, nil
 }
 
-func RequestJWT(username, password, otp, tokenUrl, clientid, clientsecret, clientscope, proxyurl string) (string, error) {
-	// Create a proxy-aware HTTP client (if proxyurl is set)
-	client, err := createHTTPClient(proxyurl)
-	if err != nil {
-		return "", err
-	}
+func RequestJWT(username, password, otp, tokenUrl, clientid, clientsecret, clientscope string, client *http.Client) (string, error) {
 
 	// Encode the username, password (with OTP appended)
 	urlV := url.Values{}

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kha7iq/kc-ssh-pam/internal/conf"
+	"github.com/genians/kc-ssh-pam/internal/conf"
 )
 
 func printHelpMessage() {
