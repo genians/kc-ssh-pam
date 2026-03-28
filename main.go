@@ -25,8 +25,8 @@ func main() {
 	providerEndpoint := c.Endpoint + "/realms/" + c.Realm
 	username := os.Getenv("PAM_USER")
 
-	// Analyze the input from stdIn and split the password if it containcts "/"  return otp and pass
-	password, otp, err := auth.ReadPasswordWithOTP()
+	// Parse stdin according to OTP parsing policy for this client configuration.
+	password, otp, err := auth.ReadPasswordWithOTP(c.RequireOTP)
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -4,18 +4,22 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime"
 	"net/http"
 	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/coreos/go-oidc"
 	"github.com/golang-jwt/jwt"
 )
+
+var otpPattern = regexp.MustCompile(`^\d{6,8}$`)
 
 type Token struct {
 	// AccessToken is the token that authorizes and authenticates
@@ -212,28 +216,46 @@ func RequestJWT(username, password, otp, tokenUrl, clientid, clientsecret, clien
 	return tokenResp.AccessToken, nil
 }
 
-func ReadPasswordWithOTP() (string, string, error) {
+func ParsePasswordAndOTP(input string, requireOTP bool) (string, string, error) {
+	pass := strings.Trim(input, "\x00")
+	if !requireOTP {
+		return pass, "", nil
+	}
+
+	separator := strings.LastIndex(pass, "/")
+	if separator <= 0 || separator == len(pass)-1 {
+		return "", "", errors.New("otp is required; use password/otp")
+	}
+
+	password := pass[:separator]
+	otp := pass[separator+1:]
+	if !otpPattern.MatchString(otp) {
+		return "", "", errors.New("otp is required; use password/otp with a 6 to 8 digit otp")
+	}
+
+	return password, otp, nil
+}
+
+func ReadPasswordWithOTP(requireOTP bool) (string, string, error) {
 	var password string
 	var otp string
 
 	stdinScanner := bufio.NewScanner(os.Stdin)
 	if stdinScanner.Scan() {
-		pass := strings.Trim(stdinScanner.Text(), "\x00")
-
-		// Extract the password and OTP from the input string
-		if strings.Contains(pass, "/") {
-			creds := strings.Split(pass, "/")
-			password = creds[0]
-			otp = creds[1]
-		} else {
-			password = pass
-			otp = ""
+		var err error
+		password, otp, err = ParsePasswordAndOTP(stdinScanner.Text(), requireOTP)
+		if err != nil {
+			return "", "", err
 		}
 	}
 
 	// Check for errors during input
 	if err := stdinScanner.Err(); err != nil {
 		return "", "", err
+	}
+
+	if password == "" && otp == "" {
+		return "", "", errors.New("password input is empty")
 	}
 
 	return password, otp, nil

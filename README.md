@@ -63,7 +63,7 @@ sudo mv kc-ssh-pam config.toml /opt/kc-ssh-pam
 ## Usage
 ```bash
 ❯ kc-ssh-pam --help
-Usage: kc-ssh-pam USERNAME PASSWORD/[OTP]
+Usage: kc-ssh-pam USERNAME PASSWORD[/OTP]
 
 Generates a password grant token from Keycloak for the given user.
 
@@ -79,7 +79,7 @@ Notes:
 
   In addition to defaults, all configuration parameters can also be provided through environment variables.
 
-  KC_SSH_CONFIG KC_SSH_REALM KC_SSH_ENDPOINT KC_SSH_CLIENTID KC_SSH_CLIENTSECRET KC_SSH_CLIENTSCOPE
+  KC_SSH_CONFIG KC_SSH_REALM KC_SSH_ENDPOINT KC_SSH_CLIENTID KC_SSH_CLIENTSECRET KC_SSH_CLIENTSCOPE KC_SSH_REQUIREOTP
   
   To use the program, you must create a client in Keycloak and provide the following 
   information in the configuration file: realm, endpoint, client ID, client secret, and 
@@ -88,7 +88,7 @@ Notes:
 Arguments:
   USERNAME                The username of the user is taken from $PAM_USER environment variable
   PASSWORD                The password of the user is taken from stdIn
-  OTP                     (Optional) The OTP code if two-factor authentication is enabled i.e (password/otp)
+  OTP                     Required when requireotp is enabled i.e (password/otp)
 
   EXAMPLE                 (With otp): echo testpass/717912 | kc-ssh-pam (Only Password): echo testpass | kc-ssh-pam
 
@@ -102,8 +102,10 @@ Arguments:
   2. Verify the existence of the KC_SSH_CONFIG variable; if it's defined, use the location specified within it.
   3. The working directory where the program is being executed from.
   4. proxyurl is optional. If defined, the program will route Keycloak requests through the specified proxy. If proxyurl is missing or empty, a direct connection is used.
-  5. Default install location `/opt/kc-ssh-pam/`
-  6. `$HOME/.config/`
+  5. requireotp is optional. If true, the input must be provided as `password/otp`. Default is false.
+  6. When requireotp is enabled, only input ending with `/` followed by 6 to 8 digits is accepted as OTP input.
+  7. Default install location `/opt/kc-ssh-pam/`
+  8. `$HOME/.config/`
   
   
 > [!IMPORTANT]  
@@ -118,6 +120,7 @@ clientsecret = "MIKEcHObWmI3V3pF1hcSqC9KEILfLN"
 clientscope = "openid"
 clientrole = "keycloak-client-role"
 proxyurl = "https://192.168.0.1:8080" # Optional: HTTP/HTTPS proxy to use when accessing Keycloak
+requireotp = false
   ```
 * Edit `/etc/pam.d/sshd` and add the following at the top of file
 ```bash

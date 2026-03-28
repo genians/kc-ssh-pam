@@ -25,7 +25,7 @@ Notes:
 
   In addition to defaults, all configuration parameters can also be provided through environment variables.
 
-  KC_SSH_CONFIG KC_SSH_REALM KC_SSH_ENDPOINT KC_SSH_CLIENTID KC_SSH_CLIENTSECRET KC_SSH_CLIENTSCOPE
+  KC_SSH_CONFIG KC_SSH_REALM KC_SSH_ENDPOINT KC_SSH_CLIENTID KC_SSH_CLIENTSECRET KC_SSH_CLIENTSCOPE KC_SSH_REQUIREOTP
   
   To use the program, you must create a client in Keycloak and provide the following 
   information in the configuration file: realm, endpoint, client ID, client secret, and 
@@ -34,7 +34,7 @@ Notes:
 Arguments:
   USERNAME                The username of the user is taken from $PAM_USER environment variable
   PASSWORD                The password of the user is taken from stdIn
-  OTP                     (Optional) The OTP code if two-factor authentication is enabled i.e (password/otp)
+  OTP                     Required when requireotp is enabled i.e (password/otp)
 
   EXAMPLE                 (With otp): echo testpass/717912 | kc-ssh-pam (Only Password): echo testpass | kc-ssh-pam
 `, os.Args[0])

@@ -7,20 +7,22 @@ import (
 )
 
 type Config struct {
-	Realm        string
-	Endpoint     string
-	ClientID     string
-	ClientSecret string
-	ClientScope  string
-	ClientRole   string
-	ProxyURL     string
+	Realm        string `mapstructure:"realm"`
+	Endpoint     string `mapstructure:"endpoint"`
+	ClientID     string `mapstructure:"clientid"`
+	ClientSecret string `mapstructure:"clientsecret"`
+	ClientScope  string `mapstructure:"clientscope"`
+	ClientRole   string `mapstructure:"clientrole"`
+	ProxyURL     string `mapstructure:"proxyurl"`
+	RequireOTP   bool   `mapstructure:"requireotp"`
 }
 
 var (
 	defaults = map[string]interface{}{
-		"realm":    "master",
-		"endpoint": "localhost",
-		"scope":    "openid",
+		"realm":       "master",
+		"endpoint":    "localhost",
+		"clientscope": "openid",
+		"requireotp":  false,
 	}
 	ConfigPath string
 )
